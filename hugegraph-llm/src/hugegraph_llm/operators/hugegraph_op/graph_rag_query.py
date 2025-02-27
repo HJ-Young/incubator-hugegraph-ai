@@ -117,7 +117,8 @@ class GraphRAGQuery:
         # 1. Try to perform a query based on the generated gremlin
         context = self._gremlin_generate_query(context)
         # 2. Try to perform a query based on subgraph-search if the previous query failed
-        if not context.get("graph_result"):
+        if (not context.get("graph_result")) and context.get("graph_result_flag") != -1:
+            context["graph_result_flag"] = 0
             context = self._subgraph_query(context)
 
         if context.get("graph_result"):
@@ -138,8 +139,10 @@ class GraphRAGQuery:
         ).run(query=query, query_embedding=query_embedding)
         if self._num_gremlin_generate_example > 0:
             gremlin = gremlin_response["result"]
+            context["graph_result_flag"] = gremlin_response["flag"]
         else:
             gremlin = gremlin_response["raw_result"]
+            context["graph_result_flag"] = gremlin_response["raw_flag"]
         log.info("Generated gremlin: %s", gremlin)
         context["gremlin"] = gremlin
         try:
@@ -148,7 +151,6 @@ class GraphRAGQuery:
                 result = []
             context["graph_result"] = [json.dumps(item, ensure_ascii=False) for item in result]
             if context["graph_result"]:
-                context["graph_result_flag"] = 1
                 context["graph_context_head"] = (
                     f"The following are graph query result " f"from gremlin query `{gremlin}`.\n"
                 )
