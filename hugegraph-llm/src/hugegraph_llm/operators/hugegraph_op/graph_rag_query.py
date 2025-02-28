@@ -124,6 +124,7 @@ class GraphRAGQuery:
         if context.get("graph_result"):
             log.debug("Knowledge from Graph:\n%s", "\n".join(context["graph_result"]))
         else:
+            context["graph_result_flag"] = -1
             log.debug("No Knowledge Extracted from Graph")
         return context
 
