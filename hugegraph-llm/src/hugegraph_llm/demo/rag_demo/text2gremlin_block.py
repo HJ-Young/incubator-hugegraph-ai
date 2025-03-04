@@ -26,6 +26,7 @@ from hugegraph_llm.config import prompt, resource_path, huge_settings
 from hugegraph_llm.models.embeddings.init_embedding import Embeddings
 from hugegraph_llm.models.llms.init_llm import LLMs
 from hugegraph_llm.operators.graph_rag_task import RAGPipeline
+from hugegraph_llm.operators.common_op.contains_keywords import ContentValidator
 from hugegraph_llm.operators.gremlin_generate_task import GremlinGenerator
 from hugegraph_llm.operators.hugegraph_op.schema_manager import SchemaManager
 from hugegraph_llm.utils.hugegraph_utils import run_gremlin_query
@@ -127,7 +128,9 @@ def simple_schema(schema: Dict[str, Any]) -> Dict[str, Any]:
     if "edgelabels" in schema:
         mini_schema["edgelabels"] = []
         for edge in schema["edgelabels"]:
-            new_edge = {key: edge[key] for key in ["name", "source_label", "target_label", "properties"] if key in edge}
+            new_edge = {
+                key: edge[key] for key in ["name", "source_label", "target_label", "properties"] if key in edge
+            }
             mini_schema["edgelabels"].append(new_edge)
 
     return mini_schema
@@ -195,7 +198,7 @@ def graph_rag_recall(
     rag.extract_keywords().keywords_to_vid().import_schema(huge_settings.graph_name).query_graphdb(
         num_gremlin_generate_example=gremlin_tmpl_num,
         gremlin_prompt=gremlin_prompt,
-    ).merge_dedup_rerank(
+    ).validate_content().merge_dedup_rerank(
         rerank_method=rerank_method,
         near_neighbor_first=near_neighbor_first,
         custom_related_information=custom_related_information,

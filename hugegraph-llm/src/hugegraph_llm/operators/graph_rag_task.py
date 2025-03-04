@@ -24,6 +24,7 @@ from hugegraph_llm.models.llms.base import BaseLLM
 from hugegraph_llm.models.llms.init_llm import LLMs
 from hugegraph_llm.operators.common_op.merge_dedup_rerank import MergeDedupRerank
 from hugegraph_llm.operators.common_op.print_result import PrintResult
+from hugegraph_llm.operators.common_op.contains_keywords import ContentValidator
 from hugegraph_llm.operators.document_op.word_extract import WordExtract
 from hugegraph_llm.operators.hugegraph_op.graph_rag_query import GraphRAGQuery
 from hugegraph_llm.operators.hugegraph_op.schema_manager import SchemaManager
@@ -89,6 +90,10 @@ class RAGPipeline:
                 extract_template=extract_template,
             )
         )
+        return self
+
+    def validate_content(self):
+        self._operators.append(ContentValidator())
         return self
 
     def import_schema(self, graph_name: str):

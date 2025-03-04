@@ -70,7 +70,6 @@ class GremlinGenerateSynthesize:
             query=query,
             schema=self.schema,
             example=self._format_examples(examples=raw_example),
-            vertices=self._format_vertices(vertices=self.vertices),
         )
         async_tasks["raw_answer"] = asyncio.create_task(self.llm.agenerate(prompt=raw_prompt))
 
@@ -79,7 +78,6 @@ class GremlinGenerateSynthesize:
             query=query,
             schema=self.schema,
             example=self._format_examples(examples=examples),
-            vertices=self._format_vertices(vertices=self.vertices),
         )
         async_tasks["initialized_answer"] = asyncio.create_task(self.llm.agenerate(prompt=init_prompt))
 

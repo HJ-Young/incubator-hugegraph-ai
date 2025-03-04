@@ -114,14 +114,19 @@ class GraphRAGQuery:
 
         # initial flag: -1 means no result, 0 means subgraph query, 1 means gremlin query
         context["graph_result_flag"] = -1
+
+        if len(context["query"]) >= 20:
+            context["graph_result"] = ""
+            return context
+
         # 1. Try to perform a query based on the generated gremlin
         context = self._gremlin_generate_query(context)
         # 2. Try to perform a query based on subgraph-search if the previous query failed
-        if (not context.get("graph_result")) and context.get("graph_result_flag") != -1:
+        if not self._graph_result_validator(context.get("graph_result")) and context.get("graph_result_flag") != -1:
             context["graph_result_flag"] = 0
             context = self._subgraph_query(context)
 
-        if context.get("graph_result"):
+        if self._graph_result_validator(context.get("graph_result")):
             log.debug("Knowledge from Graph:\n%s", "\n".join(context["graph_result"]))
         else:
             context["graph_result_flag"] = -1
@@ -417,3 +422,12 @@ class GraphRAGQuery:
 
         max_len = self._max_v_prop_len if item_type == "v" else self._max_e_prop_len
         return value[:max_len] if value else value
+
+    def _graph_result_validator(self, result: List[Any]) -> bool:
+        if not result:
+            return False
+
+        for res in result:
+            if res != "{}":
+                return True
+        return False
